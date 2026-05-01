@@ -1,0 +1,30 @@
+{
+  "name": "gold-price-telegram-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development node index.js",
+    "prod": "cross-env NODE_ENV=production node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.5.2",
+  "dependencies": {
+    "cctx": "^1.0.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "node-cron": "^3.0.3",
+    "satori": "^0.26.0",
+    "sharp": "^0.34.5",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "wrangler": "^4.84.1"
+  }
+}

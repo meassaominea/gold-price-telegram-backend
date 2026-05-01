@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Gold Price Update</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&family=Moul&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--tg-theme-bg-color, #f8fafc);
+        color: var(--tg-theme-text-color, #1e293b);
+      }
+      .tma-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: 1.5rem;
+      }
+      .input-field {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        border: 1px solid #e2e8f0;
+        transition: all 0.2s ease;
+      }
+      .input-field:focus {
+        border-color: #d4af37;
+        box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.1);
+      }
+      .btn-gold {
+        background: linear-gradient(
+          135deg,
+          #d4af37 0%,
+          #ffd700 50%,
+          #b8860b 100%
+        );
+        color: #ffffff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      /* Hide arrows in Chrome, Safari, Edge, Opera */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      /* Hide arrows in Firefox */
+      input[type="number"] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+      }
+
+      /* Image Template Styling */
+      #capture-area {
+        font-family: "Kantumruy Pro", sans-serif;
+      }
+
+      /* Settings Modal Animation */
+      #settings-modal {
+        transition:
+          opacity 0.2s ease,
+          visibility 0.2s;
+      }
+      #settings-modal.hidden {
+        opacity: 0;
+        visibility: hidden;
+        display: flex !important;
+        pointer-events: none;
+      }
+
+      /* Spinner Animation */
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .animate-spin-custom {
+        animation: spin 1s linear infinite;
+      }
+
+      /* Glass panel utility */
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        /* border: 1px solid lightgrey; */
+        /* box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); */
+        border-radius: 20px;
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+    <!-- Global Loading Overlay -->
+    <div
+      id="loading-overlay"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-[2px] hidden"
+    >
+      <div class="bg-white/90 p-5 rounded-3xl flex flex-col items-center gap-3">
+        <svg
+          class="animate-spin-custom h-10 w-10 text-yellow-600"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <span class="text-sm font-bold text-slate-600 uppercase tracking-widest"
+          >Processing</span
+        >
+      </div>
+    </div>
+
+    <!-- Hidden Template for Image Generation -->
+    <div
+      id="image-template"
+      style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        opacity: 0;
+        z-index: 5;
+      "
+    >
+      <!-- bg-[url('./background.jpg')] -->
+      <div
+        id="capture-area"
+        class="w-[600px] h-[600px] bg-[url('./background.jpg')] no-repeat bg-cover flex flex-col items-center p-[25px] box-border text-center text-black gap-3"
+      >
+        <!-- Header Section -->
+        <div class="w-full flex flex-col items-center p-3">
+          <img src="./logo.png" class="w-[45%]" />
+          <p class="text-[26px] mt-1 font-bold relative -top-3">
+            ហាងឆេងមាសគីឡូ
+          </p>
+        </div>
+
+        <!-- Date Section -->
+        <div
+          class="glass-panel border border-grey w-full flex justify-between px-6 py-2 text-[20px] font-bold"
+        >
+          <span id="tpl-date" class="relative -top-2.5"></span>
+          <span class="relative -top-2.5">តម្លៃគិតជាតម្លឹង</span>
+        </div>
+
+        <!-- Price Section -->
+        <div
+          class="glass-panel border border-grey w-full grid grid-cols-2 overflow-hidden"
+        >
+          <div
+            class="border-b border-r border-grey text-[60px] font-semibold bg-white/5 text-[#284283] p-2"
+          >
+            <span class="relative -top-6"> លក់ចេញ </span>
+          </div>
+          <div
+            class="border-b border-grey text-[60px] font-[700] font-['Inter'] flex items-center justify-center p-2 text-[#284283]"
+          >
+            <span id="tpl-buy" class="relative -top-6"> 0 </span>
+          </div>
+          <div
+            class="border-r border-grey text-[60px] font-semibold text-[#ff4444] bg-white/5 p-2"
+          >
+            <span class="relative -top-6"> ទិញចូល </span>
+          </div>
+          <div
+            class="text-[60px] text-[#ff4444] font-[700] font-['Inter'] flex items-center justify-center p-2"
+          >
+            <span id="tpl-sell" class="relative -top-6"> 0 </span>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div
+          class="w-full px-4 py-3 text-[17px] leading-[1.3] flex flex-col gap-2"
+        >
+          <div class="font-bold">
+            **យើងខ្ញុំរក្សាសិទ្ធិកែប្រែអត្រាខាងលើដោយមិនបាច់ជូនដំណឹងជាមុន**
+          </div>
+          <div class="text-black">
+            ផ្ទះលេខ 68, ផ្លូវ 298, ទល់មុខផ្សារអូឡាំពិក
+          </div>
+          <div class="font-bold text-[#ff4444] text-[22px]">
+            លេខទំនាក់ទំនង 012 82 19 19
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div
+      id="settings-modal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm hidden"
+    >
+      <div
+        class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
+      >
+        <div class="p-6 space-y-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold text-slate-800">Bot Settings</h2>
+            <button
+              id="close-settings"
+              class="p-2 text-slate-400 hover:text-slate-600"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div class="space-y-1.5">
+              <label
+                class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                >Buy Margin ($)</label
+              >
+              <input
+                type="number"
+                id="cfg-buy-margin"
+                class="input-field w-full px-4 py-3 rounded-xl outline-none text-base"
+                placeholder="35"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                >Sell Spread ($)</label
+              >
+              <input
+                type="number"
+                id="cfg-sell-spread"
+                class="input-field w-full px-4 py-3 rounded-xl outline-none text-base"
+                placeholder="30"
+              />
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              id="save-settings"
+              class="flex-1 btn-gold py-3 rounded-xl font-bold shadow-lg shadow-yellow-500/20 active:scale-95 transition-transform"
+            >
+              Save Configuration
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tma-container max-w-md mx-auto">
+      <!-- Bot Active Toggle -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-semibold text-slate-800">Bot Status</h2>
+            <p class="text-sm text-slate-500 mt-1">
+              Enable or disable automatic updates
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="bot-active-toggle"
+              class="sr-only peer"
+            />
+            <div
+              class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-yellow-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"
+            ></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Push Gold Price -->
+      <header class="mb-8 flex justify-between items-start">
+        <div>
+          <h1 class="text-xl font-semibold tracking-tight">Gold Price</h1>
+          <p class="text-sm text-slate-500 mt-1">Update current market rates</p>
+        </div>
+        <button
+          id="open-settings"
+          class="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-settings"
+          >
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+            />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      </header>
+
+      <main class="flex-grow space-y-6">
+        <div class="space-y-4">
+          <!-- Buy Price Input -->
+          <div class="space-y-1.5">
+            <label
+              for="buy-price"
+              class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
+              >Buy Price</label
+            >
+            <div class="relative">
+              <input
+                type="number"
+                id="buy-price"
+                placeholder="0.00"
+                step="0.01"
+                inputmode="decimal"
+                class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
+              />
+              <span
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
+                >USD</span
+              >
+            </div>
+          </div>
+
+          <!-- Sell Price Input -->
+          <div class="space-y-1.5">
+            <label
+              for="sell-price"
+              class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
+              >Sell Price</label
+            >
+            <div class="relative">
+              <input
+                type="number"
+                id="sell-price"
+                placeholder="0.00"
+                step="0.01"
+                inputmode="decimal"
+                class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
+              />
+              <span
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
+                >USD</span
+              >
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="mt-auto pt-6">
+        <button
+          id="main-btn"
+          class="btn-gold w-full py-4 rounded-2xl font-semibold text-lg active:scale-[0.98] transition-transform duration-100 shadow-lg shadow-yellow-500/20"
+        >
+          Update Prices
+        </button>
+      </footer>
+    </div>
+
+    <script>
+      const tg = window.Telegram.WebApp;
+      // const API_BASE_URL = "http://localhost:3000";
+      const API_BASE_URL = "http://167.99.29.4:5600";
+      tg.expand();
+      tg.ready();
+
+      const loadingOverlay = document.getElementById("loading-overlay");
+      const buyInput = document.getElementById("buy-price");
+      const sellInput = document.getElementById("sell-price");
+      const updateBtn = document.getElementById("main-btn");
+
+      const settingsModal = document.getElementById("settings-modal");
+      const openSettingsBtn = document.getElementById("open-settings");
+      const closeSettingsBtn = document.getElementById("close-settings");
+      const saveSettingsBtn = document.getElementById("save-settings");
+      const buyMarginInput = document.getElementById("cfg-buy-margin");
+      const sellSpreadInput = document.getElementById("cfg-sell-spread");
+
+      const botActiveToggle = document.getElementById("bot-active-toggle");
+
+      function setLoading(active) {
+        if (active) {
+          loadingOverlay.classList.remove("hidden");
+        } else {
+          loadingOverlay.classList.add("hidden");
+        }
+      }
+
+      function safeAlert(message, callback) {
+        if (tg.isVersionAtLeast("6.2")) {
+          tg.showAlert(message, callback);
+        } else {
+          alert(message);
+          if (callback) callback();
+        }
+      }
+
+      // Settings Modal Logic
+      openSettingsBtn.addEventListener("click", async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_BASE_URL}/get-config`);
+          const result = await response.json();
+          if (result.success) {
+            buyMarginInput.value = result.config.buyMargin;
+            sellSpreadInput.value = result.config.sellSpread;
+            settingsModal.classList.remove("hidden");
+          } else {
+            safeAlert("Failed to load configuration.");
+          }
+        } catch (error) {
+          safeAlert("Could not connect to server.");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      // Bot Active Logic
+      async function initBotStatus() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/get-bot-active`);
+          const result = await response.json();
+          if (result.success) {
+            botActiveToggle.checked = result.botActive;
+          }
+        } catch (error) {
+          console.error("Failed to fetch bot status");
+        }
+      }
+      initBotStatus();
+
+      botActiveToggle.addEventListener("change", async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_BASE_URL}/update-bot-active`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ botActive: botActiveToggle.checked }),
+          });
+          const result = await response.json();
+          if (!result.success) {
+            botActiveToggle.checked = !botActiveToggle.checked; // Revert
+            safeAlert(result.message || "Failed to update bot status.");
+          }
+        } catch (error) {
+          botActiveToggle.checked = !botActiveToggle.checked; // Revert
+          safeAlert("Connection error.");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      closeSettingsBtn.addEventListener("click", () => {
+        settingsModal.classList.add("hidden");
+      });
+
+      saveSettingsBtn.addEventListener("click", async () => {
+        const payload = {
+          buyMargin: parseFloat(buyMarginInput.value),
+          sellSpread: parseFloat(sellSpreadInput.value),
+        };
+
+        try {
+          setLoading(true);
+          const response = await fetch(`${API_BASE_URL}/update-config`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const result = await response.json();
+          if (result.success) {
+            safeAlert("Configuration updated successfully!");
+            settingsModal.classList.add("hidden");
+          } else {
+            safeAlert("Failed to update configuration.");
+          }
+        } catch (error) {
+          safeAlert("Connection error during save.");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      async function generatePriceImage(buy, sell) {
+        const node = document.getElementById("capture-area");
+        document.getElementById("tpl-buy").innerText = buy;
+        document.getElementById("tpl-sell").innerText = sell;
+        document.getElementById("tpl-date").innerText =
+          new Date().toLocaleDateString("en-GB") +
+          " " +
+          new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+        try {
+          await document.fonts.ready;
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          const canvas = await html2canvas(node, {
+            scale: 2,
+            backgroundColor: "#fbc02d",
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+          });
+          return canvas.toDataURL("image/png");
+        } catch (error) {
+          console.error("Image generation failed", error);
+          return null;
+        }
+      }
+
+      updateBtn.addEventListener("click", async () => {
+        const buyPrice = buyInput.value;
+        const sellPrice = sellInput.value;
+
+        if (!buyPrice || !sellPrice) {
+          safeAlert("Please enter both buy and sell prices.");
+          return;
+        }
+
+        try {
+          setLoading(true);
+          updateBtn.disabled = true;
+          const originalText = updateBtn.innerText;
+          updateBtn.innerText = "Generating Image...";
+
+          const imageData = await generatePriceImage(buyPrice, sellPrice);
+          updateBtn.innerText = "Updating...";
+
+          const payload = {
+            buy: parseFloat(buyPrice),
+            sell: parseFloat(sellPrice),
+            image: imageData,
+          };
+
+          const response = await fetch(`${API_BASE_URL}/send-message`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            safeAlert("✅ Success: Prices updated successfully!", () => {
+              tg.close();
+            });
+          } else {
+            safeAlert(
+              "❌ Error: " + (result.message || "Failed to update prices."),
+            );
+          }
+          updateBtn.disabled = false;
+          updateBtn.innerText = originalText;
+        } catch (error) {
+          safeAlert("❌ Connection Error: Could not reach the server.");
+          updateBtn.disabled = false;
+          updateBtn.innerText = "Update Prices";
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      if (tg.themeParams.bg_color) {
+        document.body.style.backgroundColor = tg.themeParams.bg_color;
+      }
+    </script>
+  </body>
+</html>
