@@ -90,7 +90,7 @@ app.post("/send-message", async (req, res) => {
   }
 });
 
-cron.schedule("*/30 * 8-16 * * *", async () => {
+cron.schedule("* 8-16 * * *", async () => {
   try {
     await goldService.processGoldPriceUpdate(null, null, null, true);
   } catch (error) {

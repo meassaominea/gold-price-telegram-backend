@@ -18,12 +18,12 @@ export let currentSellSpread = 0;
 
 export async function loadAssets() {
   try {
-    const fontPath = path.join(__dirname, "Roboto-Black.ttf");
+    const fontPath = path.join(__dirname, "Inter_28pt-Black.ttf");
     fontData = await fs.readFile(fontPath);
     const templatePath = path.join(__dirname, "template.png");
     const templateBuffer = await fs.readFile(templatePath);
-    templateBase64 = `data:image/png;base64,${templateBuffer.toString("base64")}`;
-    console.log("Assets loaded successfully (Roboto-Black)");
+    templateBase64 = `data:image/jpeg;base64,${templateBuffer.toString("base64")}`;
+    console.log("Assets loaded successfully");
   } catch (err) {
     console.error("Critical error loading local assets in service:", err);
   }
@@ -82,7 +82,7 @@ export async function processGoldPriceUpdate(buy, sell, image, isSchedule) {
         return { success: true };
       }
 
-      const rawPrice = Math.round(price / 0.83 + currentBuyMargin);
+      const rawPrice = Math.round(price / 0.8306 + currentBuyMargin);
 
       const lastDigit = rawPrice % 10;
       const basePrice = Math.floor(rawPrice / 10) * 10;
@@ -136,13 +136,14 @@ export async function processGoldPriceUpdate(buy, sell, image, isSchedule) {
 
   const textToSend = `<b>🚀 Gold Price Update</b>\n\n💰 <b>Buy:</b> $${buyPrice}\n🏷️ <b>Sell:</b> $${sellPrice}`;
   const formData = new globalThis.FormData();
+
   if (imageToUpload?.startsWith("data:image")) {
     const base64Data = imageToUpload.split(",")[1];
     const buffer = Buffer.from(base64Data, "base64");
     formData.append(
       "photo",
       new globalThis.Blob([buffer], { type: "image/png" }),
-      "price.jpg",
+      "price.png",
     );
   }
 
@@ -175,7 +176,7 @@ export async function generateImage(buyPrice, sellPrice) {
           width: "100%",
           height: "100%",
           color: "#ffd700",
-          fontFamily: "Roboto",
+          fontFamily: "Inter",
           position: "relative",
         },
         children: [
@@ -204,7 +205,7 @@ export async function generateImage(buyPrice, sellPrice) {
                 fontSize: "50px",
                 fontWeight: 900,
                 color: "black",
-                fontFamily: "Roboto",
+                fontFamily: "Inter",
               },
               children: `${new Date().toLocaleDateString("en-GB")} ${new Date().toLocaleTimeString(
                 "en-US",
@@ -221,16 +222,17 @@ export async function generateImage(buyPrice, sellPrice) {
             props: {
               style: {
                 position: "absolute",
-                top: "630px",
+                top: "590px",
                 left: "825px",
                 width: "525px",
                 display: "flex",
                 justifyContent: "center",
                 textAlign: "center",
-                fontSize: "160px",
+                fontSize: "210px",
+                letterSpacing: "10px",
                 fontWeight: 900,
                 color: "#284283",
-                fontFamily: "Roboto",
+                fontFamily: "Inter",
               },
               children: buyPrice.toString(),
             },
@@ -240,16 +242,17 @@ export async function generateImage(buyPrice, sellPrice) {
             props: {
               style: {
                 position: "absolute",
-                top: "880px",
+                top: "850px",
                 left: "825px",
                 width: "525px",
                 display: "flex",
                 justifyContent: "center",
                 textAlign: "center",
-                fontSize: "160px",
+                fontSize: "210px",
+                letterSpacing: "10px",
                 fontWeight: 900,
                 color: "#FD4244",
-                fontFamily: "Roboto",
+                fontFamily: "Inter",
               },
               children: sellPrice.toString(),
             },
@@ -262,7 +265,7 @@ export async function generateImage(buyPrice, sellPrice) {
       height: 1500,
       fonts: [
         {
-          name: "Roboto",
+          name: "Inter",
           data: fontData,
           weight: 900,
           style: "normal",

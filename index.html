@@ -97,6 +97,9 @@
         /* box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); */
         border-radius: 20px;
       }
+      .letter-spacing-comfortable {
+        letter-spacing: 2px;
+      }
     </style>
   </head>
   <body class="antialiased">
@@ -160,7 +163,7 @@
 
         <!-- Date Section -->
         <div
-          class="glass-panel border border-grey w-full flex justify-between px-6 py-2 text-[20px] font-bold"
+          class="glass-panel border border-black w-full flex justify-between px-6 py-2 text-[20px] font-bold"
         >
           <span id="tpl-date" class="relative -top-2.5"></span>
           <span class="relative -top-2.5">តម្លៃគិតជាតម្លឹង</span>
@@ -168,27 +171,37 @@
 
         <!-- Price Section -->
         <div
-          class="glass-panel border border-grey w-full grid grid-cols-2 overflow-hidden"
+          class="glass-panel border border-black w-full grid grid-cols-2 overflow-hidden"
         >
           <div
-            class="border-b border-r border-grey text-[60px] font-semibold bg-white/5 text-[#284283] p-2"
+            class="border-b border-r border-black text-[60px] font-semibold bg-white/5 text-[#284283] p-2"
           >
             <span class="relative -top-6"> លក់ចេញ </span>
           </div>
           <div
-            class="border-b border-grey text-[60px] font-[700] font-['Inter'] flex items-center justify-center p-2 text-[#284283]"
+            class="border-b border-black text-[60px] font-[900] font-['Inter'] flex items-center justify-center p-2 text-[#284283]"
           >
-            <span id="tpl-buy" class="relative -top-6"> 0 </span>
+            <span
+              id="tpl-buy"
+              class="relative -top-8 scale-[1.4] letter-spacing-comfortable"
+            >
+              0
+            </span>
           </div>
           <div
-            class="border-r border-grey text-[60px] font-semibold text-[#ff4444] bg-white/5 p-2"
+            class="border-r border-black text-[60px] font-semibold text-[#ff4444] bg-white/5 p-2"
           >
-            <span class="relative -top-6"> ទិញចូល </span>
+            <span class="relative -top-7"> ទិញចូល </span>
           </div>
           <div
-            class="text-[60px] text-[#ff4444] font-[700] font-['Inter'] flex items-center justify-center p-2"
+            class="text-[60px] text-[#ff4444] font-[900] font-['Inter'] flex items-center justify-center p-2"
           >
-            <span id="tpl-sell" class="relative -top-6"> 0 </span>
+            <span
+              id="tpl-sell"
+              class="relative -top-8 scale-[1.4] letter-spacing-comfortable"
+            >
+              0
+            </span>
           </div>
         </div>
 
@@ -395,8 +408,8 @@
 
     <script>
       const tg = window.Telegram.WebApp;
-      // const API_BASE_URL = "http://localhost:3000";
       const API_BASE_URL = "http://167.99.29.4:5600";
+      // const API_BASE_URL = "http://localhost:5600";
       tg.expand();
       tg.ready();
 
