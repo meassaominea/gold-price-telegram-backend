@@ -20,29 +20,21 @@ bot.command("start", (ctx) => {
   );
 });
 
-// 2. Handle data sent from tg.sendData()
-// bot.on("web_app_data", (ctx) => {
-//   try {
-//     const data = ctx.webAppData.data.json();
-
-//     if (data.action === "price_update") {
-//       const { buy, sell } = data;
-
-//       // Here you would typically save to a database
-//       ctx.reply(`✅ Prices Updated!\n\n💰 Buy: $${buy}\n🏷️ Sell: $${sell}`);
-//     }
-//   } catch (e) {
-//     ctx.reply(`❌ Failed to process price update. ${e}`);
-//   }
-// });
-
 // Get latest chatId from anyone
-// bot.on(["message", "channel_post"], (ctx) => {
-//   const chatId = ctx.chat.id;
-//   const chatTitle = ctx.chat.title || ctx.chat.username || ctx.chat.type;
-//   console.log(`👂 Heard shout from: "${chatTitle}" [ID: ${chatId}]`);
-//   ctx.reply(`Village ID: ${chatId}`);
-// });
+bot.on(["message", "channel_post"], async (ctx) => {
+  try {
+    const chatId = ctx.chat.id;
+    const chatTitle =
+      ctx.chat.title || ctx.chat.username || ctx.chat.first_name || "Unknown";
+    const chatType = ctx.chat.type;
+
+    // Dynamically import store to avoid circular deps or top-level await issues if any
+    const { saveChat } = await import("./store.js");
+    await saveChat(chatId, chatTitle, chatType);
+  } catch (err) {
+    console.error("Failed to save chat info:", err);
+  }
+});
 
 bot.launch();
 console.log("Bot is running...");

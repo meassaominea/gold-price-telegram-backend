@@ -9,7 +9,6 @@
     <title>Gold Price Update</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&family=Moul&display=swap"
       rel="stylesheet"
@@ -45,37 +44,31 @@
         color: #ffffff;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       }
-      /* Hide arrows in Chrome, Safari, Edge, Opera */
       input::-webkit-outer-spin-button,
       input::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
       }
-      /* Hide arrows in Firefox */
       input[type="number"] {
         -moz-appearance: textfield;
         appearance: textfield;
       }
-
-      /* Image Template Styling */
       #capture-area {
         font-family: "Kantumruy Pro", sans-serif;
       }
-
-      /* Settings Modal Animation */
-      #settings-modal {
+      #settings-modal,
+      #login-modal {
         transition:
           opacity 0.2s ease,
           visibility 0.2s;
       }
-      #settings-modal.hidden {
+      #settings-modal.hidden,
+      #login-modal.hidden {
         opacity: 0;
         visibility: hidden;
         display: flex !important;
         pointer-events: none;
       }
-
-      /* Spinner Animation */
       @keyframes spin {
         from {
           transform: rotate(0deg);
@@ -87,14 +80,10 @@
       .animate-spin-custom {
         animation: spin 1s linear infinite;
       }
-
-      /* Glass panel utility */
       .glass-panel {
         background: rgba(255, 255, 255, 0.2);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        /* border: 1px solid lightgrey; */
-        /* box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); */
         border-radius: 20px;
       }
       .letter-spacing-comfortable {
@@ -103,6 +92,41 @@
     </style>
   </head>
   <body class="antialiased">
+    <!-- Client Login Modal -->
+    <div
+      id="login-modal"
+      class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm"
+    >
+      <div
+        class="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6"
+      >
+        <h2 class="text-xl font-bold text-slate-800 text-center mb-4">
+          Client Login
+        </h2>
+        <p class="text-sm text-slate-500 text-center mb-6">
+          Please enter your authentication token.
+        </p>
+        <input
+          type="text"
+          id="client-token"
+          class="input-field w-full px-4 py-3 rounded-xl outline-none text-base mb-4"
+          placeholder="Your token"
+        />
+        <button
+          id="client-login-btn"
+          class="w-full btn-gold py-3 rounded-xl font-bold shadow-lg shadow-yellow-500/20 active:scale-95 transition-transform"
+        >
+          Login
+        </button>
+        <p
+          id="login-error"
+          class="text-red-500 text-sm mt-3 text-center hidden"
+        >
+          Invalid Token
+        </p>
+      </div>
+    </div>
+
     <!-- Global Loading Overlay -->
     <div
       id="loading-overlay"
@@ -135,93 +159,7 @@
       </div>
     </div>
 
-    <!-- Hidden Template for Image Generation -->
-    <div
-      id="image-template"
-      style="
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        pointer-events: none;
-        opacity: 0;
-        z-index: 5;
-      "
-    >
-      <!-- bg-[url('./background.jpg')] -->
-      <div
-        id="capture-area"
-        class="w-[600px] h-[600px] bg-[url('./background.jpg')] no-repeat bg-cover flex flex-col items-center p-[25px] box-border text-center text-black gap-3"
-      >
-        <!-- Header Section -->
-        <div class="w-full flex flex-col items-center p-3">
-          <img src="./logo.png" class="w-[45%]" />
-          <p class="text-[26px] mt-1 font-bold relative -top-3">
-            ហាងឆេងមាសគីឡូ
-          </p>
-        </div>
-
-        <!-- Date Section -->
-        <div
-          class="glass-panel border border-black w-full flex justify-between px-6 py-2 text-[20px] font-bold"
-        >
-          <span id="tpl-date" class="relative -top-2.5"></span>
-          <span class="relative -top-2.5">តម្លៃគិតជាតម្លឹង</span>
-        </div>
-
-        <!-- Price Section -->
-        <div
-          class="glass-panel border border-black w-full grid grid-cols-2 overflow-hidden"
-        >
-          <div
-            class="border-b border-r border-black text-[60px] font-semibold bg-white/5 text-[#284283] p-2"
-          >
-            <span class="relative -top-6"> លក់ចេញ </span>
-          </div>
-          <div
-            class="border-b border-black text-[60px] font-[900] font-['Inter'] flex items-center justify-center p-2 text-[#284283]"
-          >
-            <span
-              id="tpl-buy"
-              class="relative -top-8 scale-[1.4] letter-spacing-comfortable"
-            >
-              0
-            </span>
-          </div>
-          <div
-            class="border-r border-black text-[60px] font-semibold text-[#ff4444] bg-white/5 p-2"
-          >
-            <span class="relative -top-7"> ទិញចូល </span>
-          </div>
-          <div
-            class="text-[60px] text-[#ff4444] font-[900] font-['Inter'] flex items-center justify-center p-2"
-          >
-            <span
-              id="tpl-sell"
-              class="relative -top-8 scale-[1.4] letter-spacing-comfortable"
-            >
-              0
-            </span>
-          </div>
-        </div>
-
-        <!-- Footer Section -->
-        <div
-          class="w-full px-4 py-3 text-[17px] leading-[1.3] flex flex-col gap-2"
-        >
-          <div class="font-bold">
-            **យើងខ្ញុំរក្សាសិទ្ធិកែប្រែអត្រាខាងលើដោយមិនបាច់ជូនដំណឹងជាមុន**
-          </div>
-          <div class="text-black">
-            ផ្ទះលេខ 68, ផ្លូវ 298, ទល់មុខផ្សារអូឡាំពិក
-          </div>
-          <div class="font-bold text-[#ff4444] text-[22px]">
-            លេខទំនាក់ទំនង 012 82 19 19
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- Template Removed -->
     <!-- Settings Modal -->
     <div
       id="settings-modal"
@@ -255,6 +193,20 @@
           </div>
 
           <div class="space-y-4">
+            <div
+              class="space-y-1.5 bg-slate-50 p-3 rounded-xl border border-slate-100"
+            >
+              <label
+                class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                >Current Channel</label
+              >
+              <div
+                id="cfg-channel-name"
+                class="font-medium text-slate-800 truncate"
+              >
+                Unknown
+              </div>
+            </div>
             <div class="space-y-1.5">
               <label
                 class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
@@ -294,6 +246,15 @@
     </div>
 
     <div class="tma-container max-w-md mx-auto">
+      <div class="mb-4">
+        <h2 class="text-lg font-bold text-slate-800" id="welcome-text">
+          Welcome, Client
+        </h2>
+        <button id="logout-btn" class="text-sm text-red-500 font-medium">
+          Logout
+        </button>
+      </div>
+
       <!-- Bot Active Toggle -->
       <div class="mb-8">
         <div class="flex items-center justify-between">
@@ -336,7 +297,6 @@
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="lucide lucide-settings"
           >
             <path
               d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
@@ -348,17 +308,16 @@
 
       <main class="flex-grow space-y-6">
         <div class="space-y-4">
-          <!-- Buy Price Input -->
           <div class="space-y-1.5">
             <label
-              for="buy-price"
+              for="sell-price"
               class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
-              >Buy Price</label
+              >Sell Price</label
             >
             <div class="relative">
               <input
                 type="number"
-                id="buy-price"
+                id="sell-price"
                 placeholder="0.00"
                 step="0.01"
                 inputmode="decimal"
@@ -370,18 +329,16 @@
               >
             </div>
           </div>
-
-          <!-- Sell Price Input -->
           <div class="space-y-1.5">
             <label
-              for="sell-price"
+              for="buy-price"
               class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
-              >Sell Price</label
+              >Buy Price</label
             >
             <div class="relative">
               <input
                 type="number"
-                id="sell-price"
+                id="buy-price"
                 placeholder="0.00"
                 step="0.01"
                 inputmode="decimal"
@@ -408,12 +365,18 @@
 
     <script>
       const tg = window.Telegram.WebApp;
-      const API_BASE_URL = "http://167.99.29.4:5600";
-      // const API_BASE_URL = "http://localhost:5600";
+      const API_BASE_URL = window.location.origin;
       tg.expand();
       tg.ready();
 
       const loadingOverlay = document.getElementById("loading-overlay");
+      const loginModal = document.getElementById("login-modal");
+      const clientTokenInput = document.getElementById("client-token");
+      const clientLoginBtn = document.getElementById("client-login-btn");
+      const loginError = document.getElementById("login-error");
+      const welcomeText = document.getElementById("welcome-text");
+      const logoutBtn = document.getElementById("logout-btn");
+
       const buyInput = document.getElementById("buy-price");
       const sellInput = document.getElementById("sell-price");
       const updateBtn = document.getElementById("main-btn");
@@ -424,15 +387,23 @@
       const saveSettingsBtn = document.getElementById("save-settings");
       const buyMarginInput = document.getElementById("cfg-buy-margin");
       const sellSpreadInput = document.getElementById("cfg-sell-spread");
+      const channelNameDisplay = document.getElementById("cfg-channel-name");
 
       const botActiveToggle = document.getElementById("bot-active-toggle");
 
+      let authToken = localStorage.getItem("clientToken");
+
+      // Parse token from URL if available
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get("token");
+      if (urlToken) {
+        authToken = urlToken;
+        localStorage.setItem("clientToken", authToken);
+      }
+
       function setLoading(active) {
-        if (active) {
-          loadingOverlay.classList.remove("hidden");
-        } else {
-          loadingOverlay.classList.add("hidden");
-        }
+        if (active) loadingOverlay.classList.remove("hidden");
+        else loadingOverlay.classList.add("hidden");
       }
 
       function safeAlert(message, callback) {
@@ -444,15 +415,73 @@
         }
       }
 
+      async function authFetch(path, options = {}) {
+        if (!options.headers) options.headers = {};
+        options.headers["Authorization"] = `Bearer ${authToken}`;
+        const res = await fetch(`${API_BASE_URL}${path}`, options);
+        if (res.status === 401) {
+          logout();
+          throw new Error("Unauthorized");
+        }
+        return res;
+      }
+
+      function logout() {
+        authToken = null;
+        localStorage.removeItem("clientToken");
+        loginModal.classList.remove("hidden");
+      }
+
+      logoutBtn.addEventListener("click", logout);
+
+      async function verifyAndLoad() {
+        if (!authToken) {
+          loginModal.classList.remove("hidden");
+          return;
+        }
+        try {
+          setLoading(true);
+          const res = await authFetch("/api/client/config");
+          const data = await res.json();
+          if (data.success) {
+            loginModal.classList.add("hidden");
+            welcomeText.innerText = `Welcome, ${data.config.name}`;
+            botActiveToggle.checked = data.config.botActive;
+            buyMarginInput.value = data.config.buyMargin;
+            sellSpreadInput.value = data.config.sellSpread;
+            channelNameDisplay.innerText = data.config.chatTitle || "Unknown";
+          } else {
+            logout();
+          }
+        } catch (err) {
+          logout();
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      clientLoginBtn.addEventListener("click", async () => {
+        authToken = clientTokenInput.value.trim();
+        if (authToken) {
+          localStorage.setItem("clientToken", authToken);
+          loginError.classList.add("hidden");
+          await verifyAndLoad();
+          if (!authToken) loginError.classList.remove("hidden");
+        }
+      });
+
+      verifyAndLoad();
+
       // Settings Modal Logic
       openSettingsBtn.addEventListener("click", async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_BASE_URL}/get-config`);
-          const result = await response.json();
+          const res = await authFetch("/api/client/config");
+          const result = await res.json();
           if (result.success) {
             buyMarginInput.value = result.config.buyMargin;
             sellSpreadInput.value = result.config.sellSpread;
+            channelNameDisplay.innerText = result.config.chatTitle || "Unknown";
             settingsModal.classList.remove("hidden");
           } else {
             safeAlert("Failed to load configuration.");
@@ -464,29 +493,15 @@
         }
       });
 
-      // Bot Active Logic
-      async function initBotStatus() {
-        try {
-          const response = await fetch(`${API_BASE_URL}/get-bot-active`);
-          const result = await response.json();
-          if (result.success) {
-            botActiveToggle.checked = result.botActive;
-          }
-        } catch (error) {
-          console.error("Failed to fetch bot status");
-        }
-      }
-      initBotStatus();
-
       botActiveToggle.addEventListener("change", async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${API_BASE_URL}/update-bot-active`, {
+          const res = await authFetch("/api/client/update-config", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ botActive: botActiveToggle.checked }),
           });
-          const result = await response.json();
+          const result = await res.json();
           if (!result.success) {
             botActiveToggle.checked = !botActiveToggle.checked; // Revert
             safeAlert(result.message || "Failed to update bot status.");
@@ -511,12 +526,12 @@
 
         try {
           setLoading(true);
-          const response = await fetch(`${API_BASE_URL}/update-config`, {
+          const res = await authFetch("/api/client/update-config", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
-          const result = await response.json();
+          const result = await res.json();
           if (result.success) {
             safeAlert("Configuration updated successfully!");
             settingsModal.classList.add("hidden");
@@ -529,35 +544,6 @@
           setLoading(false);
         }
       });
-
-      async function generatePriceImage(buy, sell) {
-        const node = document.getElementById("capture-area");
-        document.getElementById("tpl-buy").innerText = buy;
-        document.getElementById("tpl-sell").innerText = sell;
-        document.getElementById("tpl-date").innerText =
-          new Date().toLocaleDateString("en-GB") +
-          " " +
-          new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-        try {
-          await document.fonts.ready;
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          const canvas = await html2canvas(node, {
-            scale: 2,
-            backgroundColor: "#fbc02d",
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-          });
-          return canvas.toDataURL("image/png");
-        } catch (error) {
-          console.error("Image generation failed", error);
-          return null;
-        }
-      }
 
       updateBtn.addEventListener("click", async () => {
         const buyPrice = buyInput.value;
@@ -572,24 +558,20 @@
           setLoading(true);
           updateBtn.disabled = true;
           const originalText = updateBtn.innerText;
-          updateBtn.innerText = "Generating Image...";
-
-          const imageData = await generatePriceImage(buyPrice, sellPrice);
-          updateBtn.innerText = "Updating...";
+          updateBtn.innerText = "Updating Prices...";
 
           const payload = {
             buy: parseFloat(buyPrice),
             sell: parseFloat(sellPrice),
-            image: imageData,
           };
 
-          const response = await fetch(`${API_BASE_URL}/send-message`, {
+          const res = await authFetch("/api/client/send-message", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
 
-          const result = await response.json();
+          const result = await res.json();
           if (result.success) {
             safeAlert("✅ Success: Prices updated successfully!", () => {
               tg.close();
