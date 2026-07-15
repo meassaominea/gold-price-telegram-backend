@@ -88,7 +88,11 @@ app.post("/api/admin/clients", adminAuth, async (req, res) => {
 
   if (clientId) {
     // Update
-    const updated = await updateClient(clientId, { name, chatId, hasDollarSuffix });
+    const updated = await updateClient(clientId, {
+      name,
+      chatId,
+      hasDollarSuffix,
+    });
     res.json({ success: true, client: updated });
   } else {
     // Create
@@ -124,21 +128,24 @@ app.get("/api/admin/template/:clientId", adminAuth, async (req, res) => {
 
 app.post("/api/admin/template", adminAuth, async (req, res) => {
   const { clientId, imageBase64, dateConfig, buyConfig, sellConfig } = req.body;
-  if (!clientId) return res.status(400).json({ success: false, message: "clientId required" });
-  
+  if (!clientId)
+    return res
+      .status(400)
+      .json({ success: false, message: "clientId required" });
+
   const templateData = { dateConfig, buyConfig, sellConfig };
-  
+
   if (imageBase64) {
     templateData.imageBase64 = imageBase64;
     templateData.hasImage = true;
   }
-  
+
   await saveTemplate(clientId, templateData);
-  
+
   // Don't send huge base64 back in response
   const responseData = { ...templateData };
   delete responseData.imageBase64;
-  
+
   res.json({ success: true, template: responseData });
 });
 
@@ -187,9 +194,15 @@ app.post("/api/client/update-config", clientAuth, async (req, res) => {
         message: "Admin has not assigned a Chat ID yet.",
       });
     }
-    const finalBuyMargin = updates.buyMargin !== undefined ? updates.buyMargin : req.client.buyMargin;
-    const finalSellSpread = updates.sellSpread !== undefined ? updates.sellSpread : req.client.sellSpread;
-    
+    const finalBuyMargin =
+      updates.buyMargin !== undefined
+        ? updates.buyMargin
+        : req.client.buyMargin;
+    const finalSellSpread =
+      updates.sellSpread !== undefined
+        ? updates.sellSpread
+        : req.client.sellSpread;
+
     if (!finalBuyMargin || !finalSellSpread) {
       return res.status(400).json({
         success: false,

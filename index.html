@@ -89,6 +89,19 @@
       .letter-spacing-comfortable {
         letter-spacing: 2px;
       }
+      .adjust-btn {
+        background-color: var(--tg-theme-secondary-bg-color, #ffffff);
+        color: var(--tg-theme-text-color, #1e293b);
+        border: 1px solid #e2e8f0;
+        transition: all 0.1s ease;
+      }
+      .adjust-btn:active {
+        transform: scale(0.96);
+      }
+      .adjust-btn:hover {
+        background-color: var(--tg-theme-bg-color, #f8fafc);
+        border-color: #d4af37;
+      }
     </style>
   </head>
   <body class="antialiased">
@@ -314,19 +327,29 @@
               class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
               >Sell Price</label
             >
-            <div class="relative">
-              <input
-                type="number"
-                id="sell-price"
-                placeholder="0.00"
-                step="0.01"
-                inputmode="decimal"
-                class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
-              />
-              <span
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
-                >USD</span
+            <div class="flex items-stretch gap-2">
+              <div class="relative flex-1">
+                <input
+                  type="number"
+                  id="sell-price"
+                  placeholder="0.00"
+                  step="0.01"
+                  inputmode="decimal"
+                  class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
+                />
+                <span
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
+                  >USD</span
+                >
+              </div>
+              <button
+                type="button"
+                id="both-plus-5"
+                class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                +5
+              </button>
             </div>
           </div>
           <div class="space-y-1.5">
@@ -335,19 +358,29 @@
               class="text-xs font-medium text-slate-500 uppercase tracking-wider ml-1"
               >Buy Price</label
             >
-            <div class="relative">
-              <input
-                type="number"
-                id="buy-price"
-                placeholder="0.00"
-                step="0.01"
-                inputmode="decimal"
-                class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
-              />
-              <span
-                class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
-                >USD</span
+            <div class="flex items-stretch gap-2">
+              <div class="relative flex-1">
+                <input
+                  type="number"
+                  id="buy-price"
+                  placeholder="0.00"
+                  step="0.01"
+                  inputmode="decimal"
+                  class="input-field w-full px-4 py-3.5 rounded-2xl outline-none text-lg font-medium"
+                />
+                <span
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium"
+                  >USD</span
+                >
+              </div>
+              <button
+                type="button"
+                id="both-minus-5"
+                class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5"
               >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                -5
+              </button>
             </div>
           </div>
         </div>
@@ -590,6 +623,26 @@
         } finally {
           setLoading(false);
         }
+      });
+
+      function adjustInput(inputEl, delta) {
+        const val = parseFloat(inputEl.value) || 0;
+        const newVal = val + delta;
+        if (newVal % 1 === 0) {
+          inputEl.value = newVal.toString();
+        } else {
+          inputEl.value = newVal.toFixed(2);
+        }
+      }
+
+      document.getElementById("both-minus-5").addEventListener("click", () => {
+        adjustInput(sellInput, -5);
+        adjustInput(buyInput, -5);
+      });
+      
+      document.getElementById("both-plus-5").addEventListener("click", () => {
+        adjustInput(sellInput, 5);
+        adjustInput(buyInput, 5);
       });
 
       if (tg.themeParams.bg_color) {
