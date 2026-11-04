@@ -7,7 +7,8 @@
     "buyMargin": 30,
     "sellSpread": 10,
     "botActive": false,
-    "lastPrice": 5100
+    "lastPrice": 5100,
+    "unit": "chi"
   },
   {
     "clientId": "744181cc-c4a3-47a0-96ea-59b735c4e30b",
@@ -17,7 +18,8 @@
     "buyMargin": 0,
     "sellSpread": 0,
     "botActive": false,
-    "lastPrice": null
+    "lastPrice": null,
+    "unit": "tael"
   },
   {
     "clientId": "4f8e3fd4-478e-4dd8-975c-412a02f32b34",
@@ -28,6 +30,7 @@
     "sellSpread": 10,
     "botActive": false,
     "lastPrice": 5115,
-    "hasDollarSuffix": true
+    "hasDollarSuffix": true,
+    "unit": "chi"
   }
 ]

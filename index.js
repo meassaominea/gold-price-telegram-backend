@@ -17,6 +17,7 @@ import {
 } from "./store.js";
 import crypto from "crypto";
 import fs from "fs/promises";
+import { initTelegramClient } from "./telegram-client.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +43,9 @@ app.use(express.static(__dirname));
 initStore().then(() => {
   console.log("DB Initialized");
 });
+
+// Initialize GramJS MTProto client
+initTelegramClient();
 
 // Initialize assets early
 goldService.loadAssets();
@@ -83,7 +87,7 @@ app.get("/api/admin/clients", adminAuth, async (req, res) => {
 });
 
 app.post("/api/admin/clients", adminAuth, async (req, res) => {
-  const { clientId, name, chatId, hasDollarSuffix } = req.body;
+  const { clientId, name, chatId, hasDollarSuffix, unit } = req.body;
   const clients = await getClients();
 
   if (clientId) {
@@ -92,6 +96,7 @@ app.post("/api/admin/clients", adminAuth, async (req, res) => {
       name,
       chatId,
       hasDollarSuffix,
+      unit: unit || "tael",
     });
     res.json({ success: true, client: updated });
   } else {
@@ -108,6 +113,7 @@ app.post("/api/admin/clients", adminAuth, async (req, res) => {
       botActive: false,
       lastPrice: null,
       hasDollarSuffix: !!hasDollarSuffix,
+      unit: unit || "tael",
     };
     clients.push(newClient);
     const { saveClients } = await import("./store.js");
@@ -176,6 +182,7 @@ app.get("/api/client/config", clientAuth, async (req, res) => {
       buyMargin: req.client.buyMargin || 0,
       sellSpread: req.client.sellSpread || 0,
       botActive: req.client.botActive || false,
+      unit: req.client.unit || "tael",
     },
   });
 });

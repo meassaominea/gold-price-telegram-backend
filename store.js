@@ -71,20 +71,28 @@ export async function saveChat(chatId, title, type) {
   }
 }
 
+let templatesCache = null;
+
 export async function getTemplate(clientId) {
-  const data = await fs.readFile(TEMPLATES_FILE, "utf-8");
-  const templates = JSON.parse(data);
-  return templates.find(t => t.clientId === clientId);
+  if (!templatesCache) {
+    const data = await fs.readFile(TEMPLATES_FILE, "utf-8");
+    templatesCache = JSON.parse(data);
+  }
+  return templatesCache.find(t => t.clientId === clientId);
 }
 
 export async function saveTemplate(clientId, config) {
-  const data = await fs.readFile(TEMPLATES_FILE, "utf-8");
-  const templates = JSON.parse(data);
+  let templates = templatesCache;
+  if (!templates) {
+    const data = await fs.readFile(TEMPLATES_FILE, "utf-8");
+    templates = JSON.parse(data);
+  }
   const index = templates.findIndex(t => t.clientId === clientId);
   if (index !== -1) {
     templates[index] = { ...templates[index], ...config };
   } else {
     templates.push({ clientId, ...config });
   }
+  templatesCache = templates;
   await fs.writeFile(TEMPLATES_FILE, JSON.stringify(templates, null, 2));
 }

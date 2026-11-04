@@ -220,28 +220,29 @@
                 Unknown
               </div>
             </div>
+
             <div class="space-y-1.5">
               <label
                 class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
-                >Buy Margin ($)</label
-              >
-              <input
-                type="number"
-                id="cfg-buy-margin"
-                class="input-field w-full px-4 py-3 rounded-xl outline-none text-base"
-                placeholder="35"
-              />
-            </div>
-            <div class="space-y-1.5">
-              <label
-                class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
-                >Sell Spread ($)</label
+                >Sell ($)</label
               >
               <input
                 type="number"
                 id="cfg-sell-spread"
                 class="input-field w-full px-4 py-3 rounded-xl outline-none text-base"
                 placeholder="30"
+              />
+            </div>
+            <div class="space-y-1.5">
+              <label
+                class="text-xs font-semibold text-slate-500 uppercase tracking-wider"
+                >Buy ($)</label
+              >
+              <input
+                type="number"
+                id="cfg-buy-margin"
+                class="input-field w-full px-4 py-3 rounded-xl outline-none text-base"
+                placeholder="35"
               />
             </div>
           </div>
@@ -344,10 +345,42 @@
               </div>
               <button
                 type="button"
+                id="both-plus-1"
+                class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5 hidden"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
+                +1
+              </button>
+              <button
+                type="button"
                 id="both-plus-5"
                 class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="18 15 12 9 6 15"></polyline>
+                </svg>
                 +5
               </button>
             </div>
@@ -375,10 +408,42 @@
               </div>
               <button
                 type="button"
+                id="both-minus-1"
+                class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5 hidden"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                -1
+              </button>
+              <button
+                type="button"
                 id="both-minus-5"
                 class="adjust-btn w-12 flex flex-col items-center justify-center rounded-2xl outline-none text-xs font-bold gap-0.5"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
                 -5
               </button>
             </div>
@@ -483,6 +548,16 @@
             buyMarginInput.value = data.config.buyMargin;
             sellSpreadInput.value = data.config.sellSpread;
             channelNameDisplay.innerText = data.config.chatTitle || "Unknown";
+
+            const bothPlus1 = document.getElementById("both-plus-1");
+            const bothMinus1 = document.getElementById("both-minus-1");
+            if (data.config.unit === "chi") {
+              bothPlus1?.classList.remove("hidden");
+              bothMinus1?.classList.remove("hidden");
+            } else {
+              bothPlus1?.classList.add("hidden");
+              bothMinus1?.classList.add("hidden");
+            }
           } else {
             logout();
           }
@@ -639,10 +714,20 @@
         adjustInput(sellInput, -5);
         adjustInput(buyInput, -5);
       });
-      
+
       document.getElementById("both-plus-5").addEventListener("click", () => {
         adjustInput(sellInput, 5);
         adjustInput(buyInput, 5);
+      });
+
+      document.getElementById("both-minus-1")?.addEventListener("click", () => {
+        adjustInput(sellInput, -1);
+        adjustInput(buyInput, -1);
+      });
+
+      document.getElementById("both-plus-1")?.addEventListener("click", () => {
+        adjustInput(sellInput, 1);
+        adjustInput(buyInput, 1);
       });
 
       if (tg.themeParams.bg_color) {
