@@ -56,8 +56,7 @@ export async function processGoldPriceUpdate(
       const isChiUnit = client.unit === "chi";
 
       // 1. Unrounded raw base market price from Binance
-      const rawPrice =
-        currentBinancePrice / 0.8306 / (isChiUnit ? 10 : 1);
+      const rawPrice = currentBinancePrice / 0.8306 / (isChiUnit ? 10 : 1);
 
       if (lastPrice !== null) {
         const date = new Date();
@@ -94,7 +93,7 @@ export async function processGoldPriceUpdate(
 
       lastPrice = currentPrice;
       sellPrice = currentPrice + (client.sellSpread || 0);
-      buyPrice = currentPrice - (client.buyMargin || 0);
+      buyPrice = sellPrice - (client.buyMargin || 0);
 
       // Save last price
       await updateClient(client.clientId, { lastPrice });

@@ -4,11 +4,12 @@
     "name": "UAT",
     "authToken": "285e08454cf5d2f56aa2de702c954f7e",
     "chatId": "-1003880435821",
-    "buyMargin": 30,
-    "sellSpread": 10,
-    "botActive": false,
-    "lastPrice": 5100,
-    "unit": "chi"
+    "buyMargin": 10,
+    "sellSpread": 30,
+    "botActive": true,
+    "lastPrice": 4865,
+    "unit": "tael",
+    "hasDollarSuffix": false
   },
   {
     "clientId": "744181cc-c4a3-47a0-96ea-59b735c4e30b",
