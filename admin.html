@@ -43,7 +43,7 @@
               <tr>
                 <th class="px-6 py-3 font-medium">Name</th>
                 <th class="px-6 py-3 font-medium">Unit</th>
-                <th class="px-6 py-3 font-medium">Chat ID</th>
+                <th class="px-6 py-3 font-medium">Chat</th>
                 <th class="px-6 py-3 font-medium">Auth Token</th>
                 <th class="px-6 py-3 font-medium">Status</th>
                 <th class="px-6 py-3 font-medium text-right">Actions</th>
@@ -100,13 +100,24 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">Assign Chat ID</label>
-          <input type="text" id="modal-chat-id" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. -100123456789">
-          <p class="text-xs text-slate-500 mt-1">Check the "Auto-collected Chats" table below to find the correct ID.</p>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Assign Chat</label>
+          <input type="text" id="modal-chat-id" list="chats-datalist" class="w-full px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Select or type Chat ID e.g. -100123456789">
+          <datalist id="chats-datalist"></datalist>
+          <p class="text-xs text-slate-500 mt-1">Select from auto-collected channels or enter a Chat ID.</p>
         </div>
         <div class="flex items-center gap-2 mt-2">
           <input type="checkbox" id="modal-dollar-suffix" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
           <label for="modal-dollar-suffix" class="text-sm font-medium text-slate-700 cursor-pointer">Append Dollar Suffix ($) to prices</label>
+        </div>
+        <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100 mt-2">
+          <div>
+            <label for="modal-bot-active" class="block text-sm font-medium text-slate-700 cursor-pointer">Bot Automation</label>
+            <p class="text-xs text-slate-400">Enable or disable scheduled updates for this client</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="modal-bot-active" class="sr-only peer">
+            <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+          </label>
         </div>
       </div>
       
@@ -198,6 +209,7 @@
       modalUnit: document.getElementById('modal-unit'),
       modalChatId: document.getElementById('modal-chat-id'),
       modalDollarSuffix: document.getElementById('modal-dollar-suffix'),
+      modalBotActive: document.getElementById('modal-bot-active'),
 
       // Template builder UI
       tplModal: document.getElementById('template-modal'),
@@ -285,21 +297,38 @@
       });
     };
 
+    let allChats = [];
+
     async function loadData() {
       try {
         const [clientsData, chatsData] = await Promise.all([
           req('/clients'),
           req('/chats')
         ]);
-        renderClients(clientsData.clients);
-        renderChats(chatsData.chats);
+        allChats = chatsData.chats || [];
+        renderClients(clientsData.clients, allChats);
+        renderChats(allChats);
+
+        const datalist = document.getElementById('chats-datalist');
+        if (datalist) {
+          datalist.innerHTML = allChats.map(ch => `<option value="${ch.chatId}">${ch.title} (${ch.type})</option>`).join('');
+        }
       } catch (err) {
         console.error(err);
       }
     }
 
-    function renderClients(clients) {
-      ui.clientsTbody.innerHTML = clients.map(c => `
+    function renderClients(clients, chats = allChats) {
+      ui.clientsTbody.innerHTML = clients.map(c => {
+        const matchedChat = chats.find(ch => String(ch.chatId) === String(c.chatId));
+        const chatDisplay = c.chatId
+          ? `<div>
+               <div class="font-medium text-slate-800">${matchedChat ? matchedChat.title : 'Channel'}</div>
+               <div class="text-[11px] font-mono text-slate-400">${c.chatId}</div>
+             </div>`
+          : `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">Unassigned</span>`;
+
+        return `
         <tr class="hover:bg-slate-50 transition">
           <td class="px-6 py-4 font-medium">${c.name || 'Unnamed'}</td>
           <td class="px-6 py-4">
@@ -307,7 +336,7 @@
               ${c.unit === 'chi' ? 'Chi (ជី)' : 'Tael (តម្លឹង)'}
             </span>
           </td>
-          <td class="px-6 py-4 font-mono text-slate-500">${c.chatId || '<span class="text-orange-400">Unassigned</span>'}</td>
+          <td class="px-6 py-4">${chatDisplay}</td>
           <td class="px-6 py-4 font-mono text-slate-500">
             <div class="flex items-center gap-2">
               <span class="truncate w-32 inline-block">${c.authToken}</span>
@@ -317,17 +346,51 @@
             </div>
           </td>
           <td class="px-6 py-4">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${c.botActive ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}">
-              ${c.botActive ? 'Active' : 'Inactive'}
-            </span>
+            <label class="relative inline-flex items-center cursor-pointer select-none">
+              <input 
+                type="checkbox" 
+                class="sr-only peer" 
+                ${c.botActive ? 'checked' : ''} 
+                onchange="toggleClientBot('${c.clientId}', this)"
+              />
+              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+              <span class="ml-2 text-xs font-semibold ${c.botActive ? 'text-green-700' : 'text-slate-400'}">
+                ${c.botActive ? 'Active' : 'Inactive'}
+              </span>
+            </label>
           </td>
           <td class="px-6 py-4 text-right space-x-3">
             <button onclick='openTemplateModal(${JSON.stringify(c)})' class="text-green-600 hover:text-green-800 font-medium">Template</button>
             <button onclick='openModal(${JSON.stringify(c)})' class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
           </td>
         </tr>
-      `).join('');
+      `;
+      }).join('');
     }
+
+    window.toggleClientBot = async (clientId, toggleEl) => {
+      const newActive = toggleEl.checked;
+      const labelEl = toggleEl.parentElement.querySelector('span');
+
+      if (labelEl) {
+        labelEl.textContent = newActive ? 'Active' : 'Inactive';
+        labelEl.className = `ml-2 text-xs font-semibold ${newActive ? 'text-green-700' : 'text-slate-400'}`;
+      }
+
+      try {
+        const res = await req(`/clients/${clientId}/toggle-bot`, 'POST', { botActive: newActive });
+        if (!res.success) {
+          throw new Error(res.message || 'Failed to update bot status');
+        }
+      } catch (err) {
+        alert(err.message || 'Error updating bot status');
+        toggleEl.checked = !newActive;
+        if (labelEl) {
+          labelEl.textContent = !newActive ? 'Active' : 'Inactive';
+          labelEl.className = `ml-2 text-xs font-semibold ${!newActive ? 'text-green-700' : 'text-slate-400'}`;
+        }
+      }
+    };
 
     function renderChats(chats) {
       ui.chatsTbody.innerHTML = chats.map(c => `
@@ -350,6 +413,7 @@
       ui.modalUnit.value = client && client.unit ? client.unit : 'tael';
       ui.modalChatId.value = client && client.chatId ? client.chatId : '';
       ui.modalDollarSuffix.checked = client ? !!client.hasDollarSuffix : false;
+      ui.modalBotActive.checked = client ? !!client.botActive : false;
       ui.clientModal.classList.remove('hidden');
     };
 
@@ -360,15 +424,19 @@
         name: ui.modalName.value,
         unit: ui.modalUnit.value,
         chatId: ui.modalChatId.value || null,
-        hasDollarSuffix: ui.modalDollarSuffix.checked
+        hasDollarSuffix: ui.modalDollarSuffix.checked,
+        botActive: ui.modalBotActive.checked
       };
       if (ui.modalClientId.value) body.clientId = ui.modalClientId.value;
       try {
-        await req('/clients', 'POST', body);
+        const res = await req('/clients', 'POST', body);
+        if (res.success === false) {
+          throw new Error(res.message || 'Failed to save');
+        }
         ui.clientModal.classList.add('hidden');
         loadData();
       } catch (err) {
-        alert('Failed to save');
+        alert(err.message || 'Failed to save');
       }
     };
 

@@ -20,6 +20,7 @@ RUN mkdir -p /app/data
 # Environment configuration
 ENV NODE_ENV=production
 ENV PORT=5600
+ENV DATA_DIR=/app/data
 
 EXPOSE 5600
 

@@ -6,8 +6,8 @@
     "chatId": "-1003880435821",
     "buyMargin": 10,
     "sellSpread": 30,
-    "botActive": true,
-    "lastPrice": 4865,
+    "botActive": false,
+    "lastPrice": 4890,
     "unit": "tael",
     "hasDollarSuffix": false
   },

@@ -87,17 +87,19 @@ app.get("/api/admin/clients", adminAuth, async (req, res) => {
 });
 
 app.post("/api/admin/clients", adminAuth, async (req, res) => {
-  const { clientId, name, chatId, hasDollarSuffix, unit } = req.body;
+  const { clientId, name, chatId, hasDollarSuffix, unit, botActive } = req.body;
   const clients = await getClients();
 
   if (clientId) {
     // Update
-    const updated = await updateClient(clientId, {
+    const updateData = {
       name,
       chatId,
       hasDollarSuffix,
       unit: unit || "tael",
-    });
+    };
+    if (botActive !== undefined) updateData.botActive = Boolean(botActive);
+    const updated = await updateClient(clientId, updateData);
     res.json({ success: true, client: updated });
   } else {
     // Create
@@ -110,7 +112,7 @@ app.post("/api/admin/clients", adminAuth, async (req, res) => {
       chatId: chatId || null,
       buyMargin: 0,
       sellSpread: 0,
-      botActive: false,
+      botActive: Boolean(botActive),
       lastPrice: null,
       hasDollarSuffix: !!hasDollarSuffix,
       unit: unit || "tael",
@@ -120,6 +122,26 @@ app.post("/api/admin/clients", adminAuth, async (req, res) => {
     await saveClients(clients);
     res.json({ success: true, client: newClient });
   }
+});
+
+app.post("/api/admin/clients/:id/toggle-bot", adminAuth, async (req, res) => {
+  const { id } = req.params;
+  const { botActive } = req.body;
+  const clients = await getClients();
+  const client = clients.find((c) => c.clientId === id);
+  if (!client) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Client not found" });
+  }
+  if (botActive && !client.chatId) {
+    return res.status(400).json({
+      success: false,
+      message: "Cannot activate bot: Please assign a Chat ID first.",
+    });
+  }
+  const updated = await updateClient(id, { botActive: Boolean(botActive) });
+  res.json({ success: true, client: updated });
 });
 
 app.get("/api/admin/chats", adminAuth, async (req, res) => {

@@ -1,10 +1,27 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+const isDev = process.env.NODE_ENV === "development";
+dotenv.config({
+  path: !isDev ? ".env" : ".env.local",
+});
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const DATA_DIR = process.env.DATA_DIR || __dirname;
+let dataDir = process.env.DATA_DIR;
+if (dataDir) {
+  if (!path.isAbsolute(dataDir)) {
+    dataDir = path.resolve(__dirname, dataDir);
+  } else if ((process.platform === "darwin" || process.platform === "win32") && dataDir.startsWith("/app")) {
+    dataDir = path.join(__dirname, "data");
+  }
+} else {
+  dataDir = path.join(__dirname, "data");
+}
+
+const DATA_DIR = dataDir;
 
 const CLIENTS_FILE = path.join(DATA_DIR, "clients.json");
 const CHATS_FILE = path.join(DATA_DIR, "chats.json");
@@ -15,18 +32,6 @@ async function ensureFile(filePath, defaultContent) {
     await fs.access(filePath);
   } catch {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    // If copying from an existing bundled file in the root project directory
-    const baseName = path.basename(filePath);
-    const initialSourceFile = path.join(__dirname, baseName);
-    if (filePath !== initialSourceFile) {
-      try {
-        const initialData = await fs.readFile(initialSourceFile);
-        await fs.writeFile(filePath, initialData);
-        return;
-      } catch {
-        // Fallback to defaultContent if source file doesn't exist
-      }
-    }
     await fs.writeFile(filePath, JSON.stringify(defaultContent, null, 2));
   }
 }

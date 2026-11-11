@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --max-old-space-size=256 index.js",
-    "dev": "cross-env NODE_ENV=development node index.js",
+    "dev": "cross-env NODE_ENV=development node --watch index.js",
     "prod": "cross-env NODE_ENV=production node --max-old-space-size=256 index.js"
   },
   "keywords": [],
